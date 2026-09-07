@@ -3,9 +3,14 @@
 require_once '_guards.php';
 Guard::adminOnly();
 
-$todaySales = Sales::getTodaySales();
-$totalSales = Sales::getTotalSales();
-$transactions = OrderItem::all();
+// Handle Date Range Filtering (Defaults to current month if not set)
+$startDate = $_GET['start_date'] ?? date('Y-m-01');
+$endDate   = $_GET['end_date']   ?? date('Y-m-d');
+
+// Fetch Sales Summary and Transactions
+$todaySales   = Sales::getTodaySales();
+$totalSales   = Sales::getTotalSales();
+$transactions = OrderItem::all(); 
 
 ?>
 <!DOCTYPE html>
@@ -17,11 +22,10 @@ $transactions = OrderItem::all();
     <link rel="stylesheet" type="text/css" href="./css/admin.css">
     <link rel="stylesheet" type="text/css" href="./css/util.css">
     
-    <!-- Datatables  Library -->
+    <!-- Datatables Library -->
     <link rel="stylesheet" type="text/css" href="./css/datatable.css">
     <script src="./js/datatable.js"></script>
     <script src="./js/main.js"></script>
-
 </head>
 <body>
     <?php require 'templates/admin_header.php' ?>
@@ -29,6 +33,22 @@ $transactions = OrderItem::all();
     <div class="flex">
         <?php require 'templates/admin_navbar.php' ?>
         <main>
+
+            <!-- Date Filter & Report Action Bar -->
+            <div class="card p-16 mb-16" style="margin: 16px;">
+                <form method="GET" action="admin_sales.php" style="display: flex; gap: 16px; align-items: center;">
+                    <div>
+                        <label>From: </label>
+                        <input type="date" name="start_date" value="<?= $startDate ?>">
+                    </div>
+                    <div>
+                        <label>To: </label>
+                        <input type="date" name="end_date" value="<?= $endDate ?>">
+                    </div>
+                    <button class="btn btn-primary" type="submit">Filter Sales</button>
+                    <button class="btn" type="button" onclick="window.print()">Print Report</button>
+                </form>
+            </div>
 
             <div class="flex">
                 <div style="flex: 2; padding: 16px;">
@@ -40,7 +60,7 @@ $transactions = OrderItem::all();
                             <div class="card-title">Today's Sales</div>
                         </div>
                         <div class="card-content">
-                            <?= $todaySales ?>PHP
+                            RM <?= number_format((float)$todaySales, 2) ?>
                         </div>
                     </div>
 
@@ -49,7 +69,7 @@ $transactions = OrderItem::all();
                             <div class="card-title">Total Sales</div>
                         </div>
                         <div class="card-content">
-                            <?= $totalSales ?>PHP
+                            RM <?= number_format((float)$totalSales, 2) ?>
                         </div>
                     </div>
 
@@ -61,19 +81,20 @@ $transactions = OrderItem::all();
                     <table id="transactionsTable">
                         <thead>
                             <tr>
-                                <td>Product</td>
-                                <td>Quantity</td>
-                                <td>Price</td>
-                                <td>Subtotal</td>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Subtotal</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach($transactions as $transaction) : ?>
                                 <tr>
-                                    <td><?= $transaction->product_name ?></td>
+                                    <td><?= htmlspecialchars($transaction->product_name) ?></td>
                                     <td><?= $transaction->quantity ?></td>
-                                    <td><?= $transaction->price ?></td>
-                                    <td><?= $transaction->quantity * $transaction->price ?>PHP</td>
+                                    <td>RM <?= number_format((float)$transaction->price, 2) ?></td>
+                                    <td>RM <?= number_format((float)($transaction->quantity * $transaction->price), 2) ?></td>
+                                </tr>
                             <?php endforeach ?>
                         </tbody>
                     </table>
