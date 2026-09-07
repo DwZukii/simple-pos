@@ -1,5 +1,5 @@
 <?php
-//Guard
+// Guard
 require_once '_guards.php';
 Guard::cashierOnly();
 
@@ -19,7 +19,7 @@ $products = Product::all();
     <script src="./js/main.js"></script>
     <script src="./js/cashier.js"></script>
     
-    <!-- Datatables  Library -->
+    <!-- Datatables Library -->
     <link rel="stylesheet" type="text/css" href="./css/datatable.css">
     <script src="./js/datatable.js"></script>
 
@@ -54,12 +54,12 @@ $products = Product::all();
                         <tbody>
                             <?php foreach ($products as $product) : ?>
                             <tr>
-                                <td><?= $product->name ?></td>
-                                <td><?= $product->category->name ?></td>
+                                <td><?= htmlspecialchars($product->name) ?></td>
+                                <td><?= htmlspecialchars($product->category->name ?? 'N/A') ?></td>
                                 <td><?= $product->quantity ?></td>
-                                <td><?= $product->price ?></td>
+                                <td>RM <?= number_format((float)$product->price, 2) ?></td>
                                 <td>
-                                    <a @click="addToCart(<?= $product->id ?>)" href="#" class="text-green-300">Add Product</a>
+                                    <a @click.prevent="addToCart(<?= $product->id ?>)" href="#" class="text-green-300">Add Product</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -79,19 +79,19 @@ $products = Product::all();
                                     <span class="left" x-text="cart.product.name"></span>
                                     <div class="middle">
                                         <div class="cart-item-buttons">
-                                            <button @click="subtractQuantity(cart)">-</button>
+                                            <button type="button" @click="subtractQuantity(cart)">-</button>
                                             <span x-text="cart.quantity"></span>
-                                            <button @click="addQuantity(cart)">+</button>
+                                            <button type="button" @click="addQuantity(cart)">+</button>
                                         </div>
                                     </div>
-                                    <span class="right" x-text="(cart.quantity * cart.product.price) + 'PHP'"></span>
+                                    <span class="right" x-text="'RM ' + (cart.quantity * cart.product.price).toFixed(2)"></span>
                                 </div>                                
                             </template>
                         </div>
 
                         <form action="api/cashier_controller.php" method="POST" @submit="validate">
 
-                            <input type="hidden" name="action" value="proccess_order">
+                            <input type="hidden" name="action" value="process_order">
 
                             <template x-for="(cart,i) in carts" :key="cart.product.id">
                                 <div>
@@ -102,20 +102,26 @@ $products = Product::all();
 
                             <div>
                                 <span>Total Price: </span>
-                                <span class="font-bold" x-text="totalPrice + 'php'"></span>
+                                <span class="font-bold" x-text="'RM ' + Number(totalPrice).toFixed(2)"></span>
                             </div>
-                            <div class="flex align-center gap-16">
-                                <span>Payment: </span>
+                            <div class="flex align-center gap-16 mt-16">
+                                <span>Payment (RM): </span>
                                 <div class="form-control flex-grow">
-                                    <input type="number" x-model="payment" step="0.25" name=""/>
+                                    <input 
+                                        type="number" 
+                                        x-model="payment" 
+                                        @input="calculateChange" 
+                                        step="0.01" 
+                                        name="payment" 
+                                        required 
+                                    />
                                 </div>
-                                <button type="button" @click="calculateChange" class="btn btn-outlined">Calculate Change</button>
                             </div>
-                            <div>
+                            <div class="mt-16">
                                 <span>Change: </span>
-                                <span class="font-bold" x-ref="change">--</span>
+                                <span class="font-bold" x-text="(payment >= totalPrice && totalPrice > 0) ? 'RM ' + (payment - totalPrice).toFixed(2) : 'RM 0.00'"></span>
                             </div>
-                            <button class="btn btn-primary mt-16 w-full">Proccess Order</button>
+                            <button type="submit" class="btn btn-primary mt-16 w-full">Process Order</button>
                         </form>
 
                     </div>
@@ -127,7 +133,6 @@ $products = Product::all();
 <script type="text/javascript">
 var dataTable = new simpleDatatables.DataTable("#productsTable")
 </script>
-
 
 </body>
 </html>
