@@ -1,6 +1,9 @@
 <?php
 require_once __DIR__.'/../_init.php';
 
+// Adding, editing, deleting and restocking products are all admin-only.
+Guard::adminOnlyFromApi();
+
 if (get('action') === 'add') {
     $name = post('name');
     $category_id = post('category_id');
