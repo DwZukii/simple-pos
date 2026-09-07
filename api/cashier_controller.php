@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/../_init.php';
 
-if (post('action') === 'proccess_order') {
+if (post('action') === 'process_order') {
     $order = Order::create();
 
     foreach ($_POST['cart_item'] as $item) {

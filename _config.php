@@ -3,7 +3,7 @@
 define('DB_HOST', 'localhost');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
-define('DB_DATABASE', 'simple_pos_db');
+define('DB_DATABASE', 'simple-pos');
 
 define('ROLE_CASHIER', 'CASHIER');
 define('ROLE_ADMIN', 'ADMIN');

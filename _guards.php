@@ -22,6 +22,13 @@ class Guard {
         }
     }
 
+    public static function isAdmin()
+    {
+        $currentUser = User::getAuthenticatedUser();
+
+        return $currentUser && $currentUser->role === ROLE_ADMIN;
+    }
+
     public static function hasModel($modelClass)
     {
         $model = $modelClass::find(get('id'));
