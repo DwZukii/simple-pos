@@ -3,14 +3,28 @@
 require_once '_guards.php';
 Guard::adminOnly();
 
-// Handle Date Range Filtering (Defaults to current month if not set)
-$startDate = $_GET['start_date'] ?? date('Y-m-01');
-$endDate   = $_GET['end_date']   ?? date('Y-m-d');
+// Date range filter, defaulting to the current month so far. Anything that is
+// not a real YYYY-MM-DD date falls back to the default rather than being handed
+// to the query.
+function validDate($value, $fallback)
+{
+    $date = DateTime::createFromFormat('Y-m-d', $value);
+
+    if ($date && $date->format('Y-m-d') === $value) {
+        return $value;
+    }
+
+    return $fallback;
+}
+
+$startDate = validDate(get('start_date'), date('Y-m-01'));
+$endDate   = validDate(get('end_date'), date('Y-m-d'));
 
 // Fetch Sales Summary and Transactions
 $todaySales   = Sales::getTodaySales();
 $totalSales   = Sales::getTotalSales();
-$transactions = OrderItem::all(); 
+$rangeSales   = Sales::getSalesBetween($startDate, $endDate);
+$transactions = OrderItem::allBetween($startDate, $endDate);
 
 ?>
 <!DOCTYPE html>
@@ -39,11 +53,11 @@ $transactions = OrderItem::all();
                 <form method="GET" action="admin_sales.php" style="display: flex; gap: 16px; align-items: center;">
                     <div>
                         <label>From: </label>
-                        <input type="date" name="start_date" value="<?= $startDate ?>">
+                        <input type="date" name="start_date" value="<?= htmlspecialchars($startDate) ?>">
                     </div>
                     <div>
                         <label>To: </label>
-                        <input type="date" name="end_date" value="<?= $endDate ?>">
+                        <input type="date" name="end_date" value="<?= htmlspecialchars($endDate) ?>">
                     </div>
                     <button class="btn btn-primary" type="submit">Filter Sales</button>
                     <button class="btn" type="button" onclick="window.print()">Print Report</button>
@@ -73,6 +87,18 @@ $transactions = OrderItem::all();
                         </div>
                     </div>
 
+                    <div class="card mt-16">
+                        <div class="card-header">
+                            <div class="card-title">Selected Period</div>
+                        </div>
+                        <div class="card-content">
+                            RM <?= number_format((float)$rangeSales, 2) ?>
+                        </div>
+                        <div class="card-content">
+                            <?= htmlspecialchars($startDate) ?> to <?= htmlspecialchars($endDate) ?>
+                        </div>
+                    </div>
+
                 </div>
                 <div style="flex: 5; padding: 16px">
                     <div class="subtitle">Transactions</div>
@@ -81,6 +107,7 @@ $transactions = OrderItem::all();
                     <table id="transactionsTable">
                         <thead>
                             <tr>
+                                <th>Date</th>
                                 <th>Product</th>
                                 <th>Quantity</th>
                                 <th>Price</th>
@@ -90,6 +117,7 @@ $transactions = OrderItem::all();
                         <tbody>
                             <?php foreach($transactions as $transaction) : ?>
                                 <tr>
+                                    <td><?= date('d M Y', strtotime($transaction->created_at)) ?></td>
                                     <td><?= htmlspecialchars($transaction->product_name) ?></td>
                                     <td><?= $transaction->quantity ?></td>
                                     <td>RM <?= number_format((float)$transaction->price, 2) ?></td>
