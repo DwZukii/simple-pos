@@ -1,9 +1,9 @@
 <?php
 // Guard
 require_once '_guards.php';
-// Guard::cashierOnly(); // Enable cashier-only check if configured in _guards.php
+Guard::cashierOnly();
 
-$cashierId = $_SESSION['user_id'] ?? null;
+$cashierId = User::getAuthenticatedUser()->id;
 
 // Fetch shift metrics and transactions for logged-in user
 $todaySales = Sales::getCashierTodaySales($cashierId) ?? 0.00;
