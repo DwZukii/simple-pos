@@ -42,12 +42,22 @@ $users = User::all();
                                 <?php displayFlashMessage('add_user') ?>
 
                                 <div class="form-control">
-                                    <label>Email / Username</label>
-                                    <input 
-                                        type="email" 
-                                        name="email" 
-                                        placeholder="Enter user email" 
-                                        required 
+                                    <label>Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        placeholder="Enter full name"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="form-control mt-16">
+                                    <label>Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        placeholder="Enter user email"
+                                        required
                                     />
                                 </div>
 
@@ -64,8 +74,8 @@ $users = User::all();
                                 <div class="form-control mt-16">
                                     <label>Role</label>
                                     <select name="role" required>
-                                        <option value="cashier">Cashier</option>
-                                        <option value="admin">Admin</option>
+                                        <option value="<?= ROLE_CASHIER ?>">Cashier</option>
+                                        <option value="<?= ROLE_ADMIN ?>">Admin</option>
                                     </select>
                                 </div>
 
@@ -87,6 +97,7 @@ $users = User::all();
                     <table id="usersTable">
                         <thead>
                             <tr>
+                                <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Action</th>
@@ -95,8 +106,9 @@ $users = User::all();
                         <tbody>
                             <?php foreach($users as $user) : ?>
                             <tr>
-                                <td><?= htmlspecialchars($user->email ?? $user->username) ?></td>
-                                <td><?= ucfirst(htmlspecialchars($user->role)) ?></td>
+                                <td><?= htmlspecialchars($user->name) ?></td>
+                                <td><?= htmlspecialchars($user->email) ?></td>
+                                <td><?= ucfirst(strtolower(htmlspecialchars($user->role))) ?></td>
                                 <td>
                                     <a class="text-red-500" href="api/user_controller.php?action=delete&id=<?= $user->id ?>">Delete</a>
                                 </td>
