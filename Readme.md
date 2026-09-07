@@ -290,25 +290,45 @@ Recorded honestly rather than hidden.
 
 ## Screenshots
 
-1. Login page
+Taken against the demo data, so the figures are representative rather than empty.
 
-    ![Login page](screenshot/1.JPG)
+### Admin
 
-2. Manage products
+**Inventory** — the product list, with stock and price per item and the actions
+to restock, edit or remove one.
 
-    ![Manage products](screenshot/2.JPG)
+![Admin inventory](screenshot/admin1.png)
 
-3. Add a new product
+**Add Item** — creating a product against a category.
 
-    ![Add new product](screenshot/3.JPG)
+![Add a new product](screenshot/admin2.png)
 
-4. Manage categories
+**Category** — the five categories, each editable and deletable.
 
-    ![Manage categories](screenshot/4.JPG)
+![Manage categories](screenshot/admin3.png)
 
-5. Cashier register
+**Account** — the manage users screen. Accounts are listed with their role, and
+new ones are created here with the password hashed on save.
 
-    ![Cashier register](screenshot/5.JPG)
+![Manage users](screenshot/admin4.png)
+
+### Cashier
+
+**POS Register** — products on the left, cart on the right, with the total,
+payment and change worked out live.
+
+![Cashier register](screenshot/cashier1.png)
+
+**Shift Sales** — the cashier's own takings for today and the orders behind that
+figure. Another cashier's sales do not appear here.
+
+![Cashier daily sales](screenshot/cashier2.png)
+
+**Close Shift** — expected cash from the day's sales on the left, the counted
+figure submitted against it, and the handover history marked Balanced, Over or
+Short with the reason given at the time.
+
+![Cash handover](screenshot/cashier3.png)
 
 ---
 
