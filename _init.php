@@ -8,6 +8,7 @@ require_once 'models/Product.php';
 require_once 'models/Order.php';
 require_once 'models/OrderItem.php';
 require_once 'models/Sales.php';
+require_once 'models/ShiftReport.php';
 require_once '_guards.php';
 
 session_start();

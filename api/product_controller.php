@@ -37,8 +37,16 @@ if (get('action') === 'update') {
 }
 
 if (get('action') === 'add_stock') {
-    $product = Guard::hasModel(Product::class);
-    $product->quantity += get('quantity');
+    // admin_add_stock.php posts these, so they are not in the query string and
+    // Guard::hasModel()/get() would not see them.
+    $product = Product::find(post('id'));
+
+    if (!$product) {
+        flashMessage('add_stock', 'Select a product to add stock to.', FLASH_ERROR);
+        redirect('../admin_add_stock.php');
+    }
+
+    $product->quantity += post('quantity');
     $product->update();
 
     flashMessage('add_stock', "Stocks quantity updated successfully", FLASH_SUCCESS);
