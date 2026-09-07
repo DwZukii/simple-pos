@@ -10,6 +10,7 @@ class OrderItem
     public $quantity;
     public $price;
     public $product_name;
+    public $created_at;
 
     public function __construct($data)
     {
@@ -19,6 +20,8 @@ class OrderItem
         $this->quantity = $data['quantity'];
         $this->price = $data['price'];
         $this->product_name = $data['product_name'];
+        // Only the date-filtered query joins orders, so this is not always set.
+        $this->created_at = $data['created_at'] ?? null;
     }
 
     public static function add($orderId, $item)
@@ -60,5 +63,34 @@ class OrderItem
 
         return $result;
 
+    }
+
+    public static function allBetween($startDate, $endDate)
+    {
+        global $connection;
+
+        $stmt = $connection->prepare('
+            SELECT
+                order_items.*,
+                products.name as product_name,
+                orders.created_at
+            FROM order_items
+            INNER JOIN products
+            ON order_items.product_id = products.id
+            INNER JOIN orders
+            ON order_items.order_id = orders.id
+            WHERE Date(orders.created_at) BETWEEN :start_date AND :end_date
+            ORDER BY orders.created_at DESC
+        ');
+        $stmt->bindParam('start_date', $startDate);
+        $stmt->bindParam('end_date', $endDate);
+        $stmt->execute();
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+        $result = $stmt->fetchAll();
+
+        $result = array_map(fn($item) => new OrderItem($item), $result);
+
+        return $result;
     }
 }
