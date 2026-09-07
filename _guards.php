@@ -29,6 +29,16 @@ class Guard {
         return $currentUser && $currentUser->role === ROLE_ADMIN;
     }
 
+    // For the controllers in api/. adminOnly() sends people to 'login.php'
+    // relative to the running script, which from that directory points at a
+    // file that does not exist.
+    public static function adminOnlyFromApi()
+    {
+        if (!static::isAdmin()) {
+            redirect('../login.php');
+        }
+    }
+
     public static function hasModel($modelClass)
     {
         $model = $modelClass::find(get('id'));

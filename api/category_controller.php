@@ -2,6 +2,9 @@
 
 require_once __DIR__.'/../_init.php';
 
+// Every action below changes the catalogue, so all of them are admin-only.
+Guard::adminOnlyFromApi();
+
 
 //Delete category
 if (get('action') === 'delete') {
