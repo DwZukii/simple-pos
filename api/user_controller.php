@@ -2,12 +2,8 @@
 
 require_once __DIR__.'/../_init.php';
 
-// Creating and deleting accounts is admin-only. Guard::adminOnly() redirects to
-// 'login.php' relative to this directory, which does not exist, so check here
-// and send them somewhere real.
-if (!Guard::isAdmin()) {
-    redirect('../login.php');
-}
+// Creating and deleting accounts is admin-only.
+Guard::adminOnlyFromApi();
 
 if (get('action') === 'add') {
     $name = post('name');
