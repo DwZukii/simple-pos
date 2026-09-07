@@ -75,6 +75,27 @@ CREATE TABLE `products` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `shift_reports`
+--
+-- One row per cash handover: what the till should hold based on that
+-- cashier's sales, what they actually counted, and the difference.
+-- Money columns are decimal rather than the float used by the older
+-- tables, because float cannot represent currency exactly.
+--
+
+CREATE TABLE `shift_reports` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `expected_cash` decimal(10,2) NOT NULL,
+  `counted_cash` decimal(10,2) NOT NULL,
+  `variance` decimal(10,2) NOT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -128,6 +149,13 @@ ALTER TABLE `products`
   ADD KEY `category_id` (`category_id`);
 
 --
+-- Indexes for table `shift_reports`
+--
+ALTER TABLE `shift_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -162,6 +190,12 @@ ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `shift_reports`
+--
+ALTER TABLE `shift_reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -170,6 +204,12 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `shift_reports`
+--
+ALTER TABLE `shift_reports`
+  ADD CONSTRAINT `shift_reports_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT;
 
 --
 -- Constraints for table `orders`
