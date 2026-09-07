@@ -1,70 +1,54 @@
 <?php
-require_once '../_guards.php';
-Guard::adminOnly();
 
-$action = $_GET['action'] ?? '';
+require_once __DIR__.'/../_init.php';
 
-// 1. ADD NEW USER
-if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email    = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $role     = $_POST['role'] ?? 'cashier';
-
-    if (empty($email) || empty($password)) {
-        setFlashMessage('add_user', 'Email and password are required.', 'danger');
-        header('Location: ../admin_account.php');
-        exit();
-    }
-
-    // Check if user already exists
-    $existingUser = User::where('email', $email)->first() ?? User::where('username', $email)->first();
-    if ($existingUser) {
-        setFlashMessage('add_user', 'User with this email already exists.', 'danger');
-        header('Location: ../admin_account.php');
-        exit();
-    }
-
-    // Hash password and save
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    
-    // Create new user (adjust properties based on your User model schema)
-    $user = new User();
-    if (property_exists($user, 'email')) {
-        $user->email = $email;
-    }
-    $user->username = $email;
-    $user->password = $hashedPassword;
-    $user->role     = $role;
-    $user->save();
-
-    setFlashMessage('add_user', 'User created successfully!', 'success');
-    header('Location: ../admin_account.php');
-    exit();
+// Creating and deleting accounts is admin-only. Guard::adminOnly() redirects to
+// 'login.php' relative to this directory, which does not exist, so check here
+// and send them somewhere real.
+if (!Guard::isAdmin()) {
+    redirect('../login.php');
 }
 
-// 2. DELETE USER
-if ($action === 'delete' && isset($_GET['id'])) {
-    $userId = (int)$_GET['id'];
-    
-    // Prevent deleting the currently logged in admin
-    if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $userId) {
-        setFlashMessage('delete_user', 'You cannot delete your own active account.', 'danger');
-        header('Location: ../admin_account.php');
-        exit();
+if (get('action') === 'add') {
+    $name = post('name');
+    $email = post('email');
+    $password = post('password');
+    $role = post('role') === ROLE_ADMIN ? ROLE_ADMIN : ROLE_CASHIER;
+
+    if (empty($name) || empty($email) || empty($password)) {
+        flashMessage('add_user', 'Name, email and password are all required.', FLASH_ERROR);
+        redirect('../admin_account.php');
     }
 
-    $user = User::find($userId);
-    if ($user) {
-        $user->delete();
-        setFlashMessage('delete_user', 'User deleted successfully.', 'success');
-    } else {
-        setFlashMessage('delete_user', 'User not found.', 'danger');
+    if (User::findByEmail($email)) {
+        flashMessage('add_user', 'A user with that email already exists.', FLASH_ERROR);
+        redirect('../admin_account.php');
     }
 
-    header('Location: ../admin_account.php');
-    exit();
+    try {
+        User::add($name, $email, $role, $password);
+        flashMessage('add_user', 'User created successfully.', FLASH_SUCCESS);
+    } catch (Exception $ex) {
+        flashMessage('add_user', 'An error occured', FLASH_ERROR);
+    }
+
+    redirect('../admin_account.php');
 }
 
-// Default redirect if no matching action
-header('Location: ../admin_account.php');
-exit();
+if (get('action') === 'delete') {
+    $id = get('id');
+
+    // Deleting the account you are currently signed in as would lock you out
+    // half way through the request.
+    if (User::getAuthenticatedUser()->id == $id) {
+        flashMessage('delete_user', 'You cannot delete the account you are signed in as.', FLASH_ERROR);
+        redirect('../admin_account.php');
+    }
+
+    User::find($id)?->delete();
+
+    flashMessage('delete_user', 'User deleted successfully.', FLASH_SUCCESS);
+    redirect('../admin_account.php');
+}
+
+redirect('../admin_account.php');
