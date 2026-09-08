@@ -24,7 +24,7 @@ $endDate   = validDate(get('end_date'), date('Y-m-d'));
 $todaySales   = Sales::getTodaySales();
 $totalSales   = Sales::getTotalSales();
 $rangeSales   = Sales::getSalesBetween($startDate, $endDate);
-$transactions = OrderItem::allBetween($startDate, $endDate);
+$orders       = Order::allBetween($startDate, $endDate);
 
 ?>
 <!DOCTYPE html>
@@ -101,27 +101,33 @@ $transactions = OrderItem::allBetween($startDate, $endDate);
 
                 </div>
                 <div style="flex: 5; padding: 16px">
-                    <div class="subtitle">Transactions</div>
+                    <div class="subtitle">Orders</div>
                     <hr/>
 
                     <table id="transactionsTable">
                         <thead>
                             <tr>
+                                <th>Order</th>
+                                <th>Cashier</th>
                                 <th>Date</th>
-                                <th>Product</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>Subtotal</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Change</th>
+                                <th>Receipt</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($transactions as $transaction) : ?>
+                            <?php foreach($orders as $order) : ?>
                                 <tr>
-                                    <td><?= date('d M Y', strtotime($transaction->created_at)) ?></td>
-                                    <td><?= htmlspecialchars($transaction->product_name) ?></td>
-                                    <td><?= $transaction->quantity ?></td>
-                                    <td>RM <?= number_format((float)$transaction->price, 2) ?></td>
-                                    <td>RM <?= number_format((float)($transaction->quantity * $transaction->price), 2) ?></td>
+                                    <td>#<?= $order->id ?></td>
+                                    <td><?= htmlspecialchars($order->cashier_name ?? 'Not recorded') ?></td>
+                                    <td><?= date('d M Y h:i A', strtotime($order->created_at)) ?></td>
+                                    <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
+                                    <td><?= $order->payment === null ? '&mdash;' : 'RM '.number_format($order->payment, 2) ?></td>
+                                    <td><?= $order->getChange() === null ? '&mdash;' : 'RM '.number_format($order->getChange(), 2) ?></td>
+                                    <td>
+                                        <a href="#" onclick="viewReceipt(<?= $order->id ?>); return false;" class="text-primary">View</a>
+                                    </td>
                                 </tr>
                             <?php endforeach ?>
                         </tbody>
@@ -132,6 +138,8 @@ $transactions = OrderItem::allBetween($startDate, $endDate);
 
         </main>
     </div>
+
+<?php require 'templates/receipt_modal.php' ?>
 
 <script type="text/javascript">
 var dataTable = new simpleDatatables.DataTable("#transactionsTable")

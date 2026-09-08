@@ -767,3 +767,13 @@ INSERT INTO `shift_reports` (`user_id`, `expected_cash`, `counted_cash`, `varian
   (4, 55.10, 55.10, 0.00, NULL, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 2 DAY), '21:25:00')),
   (2, 70.30, 70.30, 0.00, NULL, TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '21:11:00')),
   (4, 95.90, 101.45, 5.55, 'Note counted twice during handover', TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 1 DAY), '21:17:00'));
+
+-- Cash tendered per order, so historical receipts show a payment and a change
+-- rather than blanks. Rounded up to the next whole ringgit, which is roughly
+-- what somebody paying cash hands over.
+UPDATE `orders` o
+SET o.`payment` = (
+  SELECT CEIL(SUM(oi.`quantity` * oi.`price`))
+  FROM `order_items` oi
+  WHERE oi.`order_id` = o.`id`
+);

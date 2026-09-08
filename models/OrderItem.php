@@ -65,6 +65,32 @@ class OrderItem
 
     }
 
+    // The lines of a single order, for the receipt.
+    public static function forOrder($orderId)
+    {
+        global $connection;
+
+        $stmt = $connection->prepare('
+            SELECT
+                order_items.*,
+                products.name as product_name
+            FROM order_items
+            INNER JOIN products
+            ON order_items.product_id = products.id
+            WHERE order_items.order_id = :order_id
+            ORDER BY order_items.id
+        ');
+        $stmt->bindParam('order_id', $orderId);
+        $stmt->execute();
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+        $result = $stmt->fetchAll();
+
+        $result = array_map(fn($item) => new OrderItem($item), $result);
+
+        return $result;
+    }
+
     public static function allBetween($startDate, $endDate)
     {
         global $connection;

@@ -58,6 +58,7 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
                                 <th>Order #</th>
                                 <th>Total Amount</th>
                                 <th>Time</th>
+                                <th>Receipt</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,6 +67,9 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
                                     <td>#<?= $order->id ?></td>
                                     <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
                                     <td><?= date('h:i A', strtotime($order->created_at)) ?></td>
+                                    <td>
+                                        <a href="#" onclick="viewReceipt(<?= $order->id ?>); return false;" class="text-primary">View</a>
+                                    </td>
                                 </tr>
                             <?php endforeach ?>
                         </tbody>
@@ -75,6 +79,8 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
             </div>
         </main>
     </div>
+
+<?php require 'templates/receipt_modal.php' ?>
 
 <script type="text/javascript">
 var dataTable = new simpleDatatables.DataTable("#cashierSalesTable");
