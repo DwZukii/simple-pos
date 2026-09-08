@@ -124,13 +124,14 @@ populated system for testing or a demonstration:
 mysql -u root simple-pos < demo_data.sql
 ```
 
-That seeds 19 products across 5 categories, about four weeks of orders from both
-cashier accounts, and a history of shift handovers. Dates are relative to today,
-so it always looks current, and the file can be re-run to refresh them.
+That seeds 38 products across 7 categories, four extra staff accounts, about six
+weeks of orders spread over four cashiers, and a history of shift handovers.
+Dates are relative to today, so it always looks current, and the file can be
+re-run to refresh them.
 
-It also creates the second cashier account and the `Food` category, because a
-clean `simple-pos.sql` import has no categories and only two users. Running it
-on a database that already has them changes nothing.
+It creates everything it depends on, because a clean `simple-pos.sql` import has
+no categories, no products and only two users. Running it on a database that
+already has them just brings them back in line.
 
 ### 6. Start it
 Open Laragon and click **Start All**, then visit:
@@ -143,19 +144,22 @@ or `http://localhost/simple-pos` if you are not using Laragon's virtual hosts.
 
 ### Demo accounts
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | `admin@gmail.com` | `adminadmin` |
-| Cashier | `cashier@email.com` | `cashiercashier` |
-| Cashier | `cashier2@example.com` | `cashiercashier` |
+| Role | Email | Password | From |
+|---|---|---|---|
+| Admin | `admin@gmail.com` | `adminadmin` | `simple-pos.sql` |
+| Cashier | `cashier@email.com` | `cashiercashier` | `simple-pos.sql` |
+| Admin | `amirul@simplepos.test` | `cashiercashier` | `demo_data.sql` |
+| Cashier | `adam@simplepos.test` | `cashiercashier` | `demo_data.sql` |
+| Cashier | `alif@simplepos.test` | `cashiercashier` | `demo_data.sql` |
+| Cashier | `hadri@simplepos.test` | `cashiercashier` | `demo_data.sql` |
 
-The first two come from `simple-pos.sql`; the second cashier comes from
-`demo_data.sql` and only exists if you loaded it. All three are for local
-development only.
+All are for local development only. The four `@simplepos.test` accounts exist
+only if you loaded the demo data, and the sales history is spread across them so
+the per-cashier reports have several people to separate.
 
-The first two store their passwords as plain text because they predate the
-hashing added in the manage users feature. The second cashier is hashed, as is
-any account created through the app.
+The two original accounts store their passwords as plain text because they
+predate the hashing added in the manage users feature. Everything created by the
+demo data is hashed, as is any account created through the app.
 
 ---
 

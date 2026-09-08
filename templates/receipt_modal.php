@@ -43,24 +43,26 @@ function viewReceipt(orderId) {
             var order = data.order;
             var html = '';
 
-            html += receiptRow('Order', '<strong>#' + order.id + '</strong>');
-            html += receiptRow('Cashier', order.cashier_name || 'Not recorded');
-            html += receiptRow('Date', order.created_at || 'Not recorded');
+            html += receiptRow('Order ID:', '<strong>#' + order.id + '</strong>');
+            html += receiptRow('Cashier:', order.cashier_name || 'System / Admin');
+            html += receiptRow('Date:', order.created_at || 'Not recorded');
+
             html += '<hr class="receipt-rule"/>';
+            html += '<div class="receipt-section">Items Purchased:</div>';
 
             data.items.forEach(function (item) {
                 html += receiptRow(
-                    escapeHtml(item.product_name) + ' &times; ' + item.quantity,
+                    escapeHtml(item.product_name) + ' x' + item.quantity,
                     money(item.subtotal)
                 );
             });
 
             html += '<hr class="receipt-rule"/>';
-            html += receiptRow('Total', '<strong>' + money(order.total) + '</strong>');
-            html += receiptRow('Paid', order.payment === null ? 'Not recorded' : money(order.payment));
+            html += receiptRow('Total Amount:', money(order.total), 'receipt-total');
+            html += receiptRow('Paid:', order.payment === null ? 'Not recorded' : money(order.payment));
             html += receiptRow(
-                'Change',
-                order.change === null ? 'Not recorded' : '<strong>' + money(order.change) + '</strong>',
+                'Change:',
+                order.change === null ? 'Not recorded' : money(order.change),
                 'receipt-change'
             );
 
