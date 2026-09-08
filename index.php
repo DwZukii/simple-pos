@@ -149,27 +149,27 @@ if (get('show_receipt') && isset($_SESSION['receipt'])) :
         <hr class="receipt-rule"/>
 
         <div class="receipt-row">
-            <span>Order</span>
-            <span class="font-bold">#<?= htmlspecialchars($receipt['order_id']) ?></span>
+            <span>Order ID:</span>
+            <span><strong>#<?= htmlspecialchars($receipt['order_id']) ?></strong></span>
         </div>
         <div class="receipt-row">
-            <span>Date</span>
-            <span><?= date('d M Y h:i A') ?></span>
+            <span>Date:</span>
+            <span><?= date('Y-m-d H:i:s') ?></span>
         </div>
 
         <hr class="receipt-rule"/>
 
-        <div class="receipt-row">
-            <span>Total</span>
-            <span class="font-bold">RM <?= number_format((float)$receipt['total'], 2) ?></span>
+        <div class="receipt-row receipt-total">
+            <span>Total Amount:</span>
+            <span>RM <?= number_format((float)$receipt['total'], 2) ?></span>
         </div>
         <div class="receipt-row">
-            <span>Paid</span>
+            <span>Paid:</span>
             <span>RM <?= number_format((float)$receipt['payment'], 2) ?></span>
         </div>
         <div class="receipt-row receipt-change">
-            <span>Change</span>
-            <span class="font-bold">RM <?= number_format((float)$receipt['change'], 2) ?></span>
+            <span>Change:</span>
+            <span>RM <?= number_format((float)$receipt['change'], 2) ?></span>
         </div>
 
         <button type="button" class="btn btn-primary mt-16 w-full" onclick="closeCheckoutReceipt()">Done, new sale</button>
