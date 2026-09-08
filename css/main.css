@@ -119,3 +119,60 @@ body {
     border-color: var(--green-500);
     color: var(--green-500);
 }
+
+/* Receipt modal, shared by the checkout confirmation and the reprint dialog. */
+
+.receipt-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.receipt-paper {
+    background: #fff;
+    width: 360px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.receipt-title {
+    margin: 0;
+    font-size: 20px;
+    text-align: center;
+}
+
+.receipt-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    text-align: center;
+    color: var(--gray-400);
+}
+
+.receipt-rule {
+    border: 0;
+    border-top: 1px dashed var(--gray-400);
+    margin: 12px 0;
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.receipt-change {
+    font-size: 16px;
+    color: var(--green-500);
+}
