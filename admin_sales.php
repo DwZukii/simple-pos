@@ -3,22 +3,13 @@
 require_once '_guards.php';
 Guard::adminOnly();
 
-// Date range filter, defaulting to the current month so far. Anything that is
-// not a real YYYY-MM-DD date falls back to the default rather than being handed
-// to the query.
-function validDate($value, $fallback)
-{
-    $date = DateTime::createFromFormat('Y-m-d', $value);
+// Which period the report is showing. resolveReportFilter() turns the day /
+// month / year / all-time choice into a plain start and end date.
+$filter       = resolveReportFilter();
+$filterAction = 'admin_sales.php';
 
-    if ($date && $date->format('Y-m-d') === $value) {
-        return $value;
-    }
-
-    return $fallback;
-}
-
-$startDate = validDate(get('start_date'), date('Y-m-01'));
-$endDate   = validDate(get('end_date'), date('Y-m-d'));
+$startDate = $filter['start'];
+$endDate   = $filter['end'];
 
 // Fetch Sales Summary and Transactions
 $todaySales   = Sales::getTodaySales();
@@ -48,21 +39,8 @@ $orders       = Order::allBetween($startDate, $endDate);
         <?php require 'templates/admin_navbar.php' ?>
         <main>
 
-            <!-- Date Filter & Report Action Bar -->
-            <div class="card p-16 mb-16" style="margin: 16px;">
-                <form method="GET" action="admin_sales.php" style="display: flex; gap: 16px; align-items: center;">
-                    <div>
-                        <label>From: </label>
-                        <input type="date" name="start_date" value="<?= htmlspecialchars($startDate) ?>">
-                    </div>
-                    <div>
-                        <label>To: </label>
-                        <input type="date" name="end_date" value="<?= htmlspecialchars($endDate) ?>">
-                    </div>
-                    <button class="btn btn-primary" type="submit">Filter Sales</button>
-                    <button class="btn" type="button" onclick="window.print()">Print Report</button>
-                </form>
-            </div>
+            <!-- Period Filter & Report Action Bar -->
+            <?php require 'templates/report_filter.php' ?>
 
             <div class="flex">
                 <div style="flex: 2; padding: 16px;">
@@ -95,7 +73,7 @@ $orders       = Order::allBetween($startDate, $endDate);
                             RM <?= number_format((float)$rangeSales, 2) ?>
                         </div>
                         <div class="card-content">
-                            <?= htmlspecialchars($startDate) ?> to <?= htmlspecialchars($endDate) ?>
+                            <?= htmlspecialchars($filter['label']) ?>
                         </div>
                     </div>
 

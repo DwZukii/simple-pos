@@ -5,9 +5,16 @@ Guard::cashierOnly();
 
 $cashierId = User::getAuthenticatedUser()->id;
 
-// Fetch shift metrics and transactions for logged-in user
-$todaySales = Sales::getCashierTodaySales($cashierId) ?? 0.00;
-$shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
+// Which period to show. Defaults to today, which is what a cashier wants
+// mid-shift; the switcher is there for checking an earlier day.
+$filter       = resolveReportFilter();
+$filterAction = 'cashier_sales.php';
+
+// Every query below is scoped to $cashierId, so widening the dates still only
+// ever shows this cashier their own takings.
+$todaySales        = Sales::getCashierTodaySales($cashierId) ?? 0.00;
+$periodSales       = Sales::getCashierSalesBetween($cashierId, $filter['start'], $filter['end']) ?? 0.00;
+$shiftTransactions = Order::getByCashierBetween($cashierId, $filter['start'], $filter['end']) ?? [];
 ?>
 <!DOCTYPE html>
 <html>
@@ -30,6 +37,10 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
     <div class="flex">
         <?php require 'templates/admin_navbar.php' ?>
         <main>
+
+            <!-- Period Filter -->
+            <?php require 'templates/report_filter.php' ?>
+
             <div class="flex">
                 
                 <!-- Daily Cash Sales Overview -->
@@ -45,11 +56,23 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
                             RM <?= number_format((float)$todaySales, 2) ?>
                         </div>
                     </div>
+
+                    <div class="card mt-16">
+                        <div class="card-header">
+                            <div class="card-title">Selected Period</div>
+                        </div>
+                        <div class="card-content">
+                            RM <?= number_format((float)$periodSales, 2) ?>
+                        </div>
+                        <div class="card-content">
+                            <?= htmlspecialchars($filter['label']) ?>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Shift Report Table -->
                 <div style="flex: 5; padding: 16px;">
-                    <div class="subtitle">My Shift Transactions</div>
+                    <div class="subtitle">My Transactions</div>
                     <hr/>
 
                     <table id="cashierSalesTable">
@@ -57,7 +80,7 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
                             <tr>
                                 <th>Order #</th>
                                 <th>Total Amount</th>
-                                <th>Time</th>
+                                <th>Date &amp; Time</th>
                                 <th>Receipt</th>
                             </tr>
                         </thead>
@@ -66,7 +89,7 @@ $shiftTransactions = Order::getByCashierToday($cashierId) ?? [];
                                 <tr>
                                     <td>#<?= $order->id ?></td>
                                     <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
-                                    <td><?= date('h:i A', strtotime($order->created_at)) ?></td>
+                                    <td><?= date('d M Y h:i A', strtotime($order->created_at)) ?></td>
                                     <td>
                                         <a href="#" onclick="viewReceipt(<?= $order->id ?>); return false;" class="text-primary">View</a>
                                     </td>
