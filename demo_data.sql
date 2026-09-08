@@ -1,6 +1,10 @@
 -- Demo data for simple-pos. Safe to re-run: it clears the
 -- transactional tables first, then reseeds them.
--- Generated, deterministic. Does not touch the users table.
+-- Generated, deterministic.
+--
+-- Creates every row it depends on. A clean `simple-pos.sql` import has no
+-- categories, no products and only two users, so the category and the second
+-- cashier referenced below have to be made here rather than assumed.
 
 SET FOREIGN_KEY_CHECKS = 0;
 DELETE FROM `order_items`;
@@ -8,8 +12,16 @@ DELETE FROM `orders`;
 DELETE FROM `shift_reports`;
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- A second cashier, so the sales below come from two people rather than one
+-- and the per-cashier reports have something to separate. Password is
+-- `cashiercashier`, hashed the same way the manage users screen hashes.
+INSERT INTO `users` (`id`, `name`, `email`, `role`, `password`) VALUES
+  (4, 'Second Cashier', 'cashier2@example.com', 'CASHIER',
+   '$2y$10$KkyZWjtM/ZSzGcWrcjSDVe4E.pa/H56pOgDycIFMFJFOJV.IZv2h6')
+  ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
 INSERT INTO `categories` (`id`, `name`) VALUES
-  (22, 'Beverages'), (23, 'Snacks'), (24, 'Household'), (25, 'Frozen')
+  (21, 'Food'), (22, 'Beverages'), (23, 'Snacks'), (24, 'Household'), (25, 'Frozen')
   ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
 INSERT INTO `products` (`id`, `category_id`, `name`, `quantity`, `price`) VALUES
