@@ -16,6 +16,8 @@ $todaySales   = Sales::getTodaySales();
 $totalSales   = Sales::getTotalSales();
 $rangeSales   = Sales::getSalesBetween($startDate, $endDate);
 $orders       = Order::allBetween($startDate, $endDate);
+$topProduct   = Sales::getTopProductBetween($startDate, $endDate);
+$topCategory  = Sales::getTopCategoryBetween($startDate, $endDate);
 
 ?>
 <!DOCTYPE html>
@@ -75,6 +77,38 @@ $orders       = Order::allBetween($startDate, $endDate);
                         <div class="card-content">
                             <?= htmlspecialchars($filter['label']) ?>
                         </div>
+                    </div>
+
+                    <div class="card mt-16">
+                        <div class="card-header">
+                            <div class="card-title">Best Selling Product</div>
+                        </div>
+                        <?php if ($topProduct) : ?>
+                            <div class="card-content font-bold">
+                                <?= htmlspecialchars($topProduct['name']) ?>
+                            </div>
+                            <div class="card-content">
+                                <?= $topProduct['quantity'] ?> sold in this period
+                            </div>
+                        <?php else : ?>
+                            <div class="card-content">Nothing sold in this period</div>
+                        <?php endif ?>
+                    </div>
+
+                    <div class="card mt-16">
+                        <div class="card-header">
+                            <div class="card-title">Best Selling Category</div>
+                        </div>
+                        <?php if ($topCategory) : ?>
+                            <div class="card-content font-bold">
+                                <?= htmlspecialchars($topCategory['name']) ?>
+                            </div>
+                            <div class="card-content">
+                                <?= $topCategory['quantity'] ?> items sold in this period
+                            </div>
+                        <?php else : ?>
+                            <div class="card-content">Nothing sold in this period</div>
+                        <?php endif ?>
                     </div>
 
                 </div>
