@@ -91,6 +91,43 @@ class Order
         return $result;
     }
 
+    // The cashier's own orders over a chosen period. Scoped by user_id so one
+    // cashier can never read another's takings by changing the dates.
+    public static function getByCashierBetween($user_id, $startDate, $endDate)
+    {
+        global $connection;
+
+        $sql_command = ("
+            SELECT
+                orders.id,
+                orders.user_id,
+                orders.payment,
+                orders.created_at,
+                SUM(order_items.quantity*order_items.price) as total_amount
+            FROM
+                `orders`
+            INNER JOIN
+                order_items on order_items.order_id = orders.id
+            WHERE orders.user_id = :user_id
+                AND Date(orders.created_at) BETWEEN :start_date AND :end_date
+            GROUP BY orders.id, orders.user_id, orders.payment, orders.created_at
+            ORDER BY orders.created_at DESC;
+        ");
+
+        $stmt = $connection->prepare($sql_command);
+        $stmt->bindParam('user_id', $user_id);
+        $stmt->bindParam('start_date', $startDate);
+        $stmt->bindParam('end_date', $endDate);
+        $stmt->execute();
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+        $result = $stmt->fetchAll();
+
+        $result = array_map(fn($item) => new Order($item), $result);
+
+        return $result;
+    }
+
     // One row per order rather than per line, so the sales report can show a
     // receipt button against each sale.
     public static function allBetween($startDate, $endDate)
