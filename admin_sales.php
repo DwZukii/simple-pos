@@ -11,9 +11,9 @@ $filterAction = 'admin_sales.php';
 $startDate = $filter['start'];
 $endDate   = $filter['end'];
 
-// Fetch Sales Summary and Transactions
-$todaySales   = Sales::getTodaySales();
-$totalSales   = Sales::getTotalSales();
+// Fetch Sales Summary and Transactions.
+// Today's and all-time takings no longer have their own cards: the filter
+// covers both, as "Specific Day" on today and as "All Time".
 $rangeSales   = Sales::getSalesBetween($startDate, $endDate);
 $orders       = Order::allBetween($startDate, $endDate);
 $topProduct   = Sales::getTopProductBetween($startDate, $endDate);
@@ -41,111 +41,72 @@ $topCategory  = Sales::getTopCategoryBetween($startDate, $endDate);
         <?php require 'templates/admin_navbar.php' ?>
         <main>
 
-            <!-- Period Filter & Report Action Bar -->
-            <?php require 'templates/report_filter.php' ?>
+            <h1 class="page-title">System Sales History &amp; Analytics</h1>
+            <hr class="page-title-rule"/>
 
-            <div class="flex">
-                <div style="flex: 2; padding: 16px;">
-                    <div class="subtitle">Sales Informations</div>
-                    <hr/>
+            <!-- Period filter. $filterPrint adds the print button, which only
+                 this page wants. -->
+            <?php $filterPrint = true; require 'templates/report_filter.php' ?>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">Today's Sales</div>
-                        </div>
-                        <div class="card-content">
-                            RM <?= number_format((float)$todaySales, 2) ?>
-                        </div>
-                    </div>
-
-                    <div class="card mt-16">
-                        <div class="card-header">
-                            <div class="card-title">Total Sales</div>
-                        </div>
-                        <div class="card-content">
-                            RM <?= number_format((float)$totalSales, 2) ?>
-                        </div>
-                    </div>
-
-                    <div class="card mt-16">
-                        <div class="card-header">
-                            <div class="card-title">Selected Period</div>
-                        </div>
-                        <div class="card-content">
-                            RM <?= number_format((float)$rangeSales, 2) ?>
-                        </div>
-                        <div class="card-content">
-                            <?= htmlspecialchars($filter['label']) ?>
-                        </div>
-                    </div>
-
-                    <div class="card mt-16">
-                        <div class="card-header">
-                            <div class="card-title">Best Selling Product</div>
-                        </div>
-                        <?php if ($topProduct) : ?>
-                            <div class="card-content font-bold">
-                                <?= htmlspecialchars($topProduct['name']) ?>
-                            </div>
-                            <div class="card-content">
-                                <?= $topProduct['quantity'] ?> sold in this period
-                            </div>
-                        <?php else : ?>
-                            <div class="card-content">Nothing sold in this period</div>
-                        <?php endif ?>
-                    </div>
-
-                    <div class="card mt-16">
-                        <div class="card-header">
-                            <div class="card-title">Best Selling Category</div>
-                        </div>
-                        <?php if ($topCategory) : ?>
-                            <div class="card-content font-bold">
-                                <?= htmlspecialchars($topCategory['name']) ?>
-                            </div>
-                            <div class="card-content">
-                                <?= $topCategory['quantity'] ?> items sold in this period
-                            </div>
-                        <?php else : ?>
-                            <div class="card-content">Nothing sold in this period</div>
-                        <?php endif ?>
-                    </div>
-
+            <div class="stat-row">
+                <div class="stat-card stat-money">
+                    <div class="stat-label">Filtered Cash Sales</div>
+                    <div class="stat-value">RM <?= number_format((float)$rangeSales, 2) ?></div>
+                    <div class="stat-note"><?= htmlspecialchars($filter['label']) ?></div>
                 </div>
-                <div style="flex: 5; padding: 16px">
-                    <div class="subtitle">Orders</div>
-                    <hr/>
 
-                    <table id="transactionsTable">
-                        <thead>
+                <div class="stat-card stat-product">
+                    <div class="stat-label">Most Sold Item</div>
+                    <?php if ($topProduct) : ?>
+                        <div class="stat-value"><?= htmlspecialchars($topProduct['name']) ?></div>
+                        <div class="stat-note"><?= $topProduct['quantity'] ?> units sold</div>
+                    <?php else : ?>
+                        <div class="stat-value">&mdash;</div>
+                        <div class="stat-note">Nothing sold in this period</div>
+                    <?php endif ?>
+                </div>
+
+                <div class="stat-card stat-category">
+                    <div class="stat-label">Top Category</div>
+                    <?php if ($topCategory) : ?>
+                        <div class="stat-value"><?= htmlspecialchars($topCategory['name']) ?></div>
+                        <div class="stat-note"><?= $topCategory['quantity'] ?> total items sold</div>
+                    <?php else : ?>
+                        <div class="stat-value">&mdash;</div>
+                        <div class="stat-note">Nothing sold in this period</div>
+                    <?php endif ?>
+                </div>
+            </div>
+
+            <div class="table-panel">
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Cashier / Staff</th>
+                            <th>Date &amp; Time</th>
+                            <th>Total Amount</th>
+                            <th>Paid</th>
+                            <th>Change</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($orders as $order) : ?>
                             <tr>
-                                <th>Order</th>
-                                <th>Cashier</th>
-                                <th>Date</th>
-                                <th>Total</th>
-                                <th>Paid</th>
-                                <th>Change</th>
-                                <th>Receipt</th>
+                                <td>#<?= $order->id ?></td>
+                                <td class="font-bold"><?= htmlspecialchars($order->cashier_name ?? 'System / Admin') ?></td>
+                                <td><?= date('d M Y h:i A', strtotime($order->created_at)) ?></td>
+                                <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
+                                <td><?= $order->payment === null ? '&mdash;' : 'RM '.number_format($order->payment, 2) ?></td>
+                                <td><?= $order->getChange() === null ? '&mdash;' : 'RM '.number_format($order->getChange(), 2) ?></td>
+                                <td>
+                                    <button type="button" class="btn-receipt" onclick="viewReceipt(<?= $order->id ?>)">View Receipt</button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($orders as $order) : ?>
-                                <tr>
-                                    <td>#<?= $order->id ?></td>
-                                    <td><?= htmlspecialchars($order->cashier_name ?? 'Not recorded') ?></td>
-                                    <td><?= date('d M Y h:i A', strtotime($order->created_at)) ?></td>
-                                    <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
-                                    <td><?= $order->payment === null ? '&mdash;' : 'RM '.number_format($order->payment, 2) ?></td>
-                                    <td><?= $order->getChange() === null ? '&mdash;' : 'RM '.number_format($order->getChange(), 2) ?></td>
-                                    <td>
-                                        <a href="#" onclick="viewReceipt(<?= $order->id ?>); return false;" class="text-primary">View</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach ?>
-                        </tbody>
-                    </table>
-
-                </div>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
             </div>
 
         </main>

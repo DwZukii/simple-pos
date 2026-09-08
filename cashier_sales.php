@@ -12,7 +12,8 @@ $filterAction = 'cashier_sales.php';
 
 // Every query below is scoped to $cashierId, so widening the dates still only
 // ever shows this cashier their own takings.
-$todaySales        = Sales::getCashierTodaySales($cashierId) ?? 0.00;
+// The filter defaults to today, so the headline figure is still this
+// cashier's takings for the current shift unless they widen it themselves.
 $periodSales       = Sales::getCashierSalesBetween($cashierId, $filter['start'], $filter['end']) ?? 0.00;
 $shiftTransactions = Order::getByCashierBetween($cashierId, $filter['start'], $filter['end']) ?? [];
 ?>
@@ -38,68 +39,49 @@ $shiftTransactions = Order::getByCashierBetween($cashierId, $filter['start'], $f
         <?php require 'templates/admin_navbar.php' ?>
         <main>
 
-            <!-- Period Filter -->
+            <h1 class="page-title">Shift Sales &amp; Receipts History</h1>
+            <hr class="page-title-rule"/>
+
+            <!-- Period filter -->
             <?php require 'templates/report_filter.php' ?>
 
-            <div class="flex">
-                
-                <!-- Daily Cash Sales Overview -->
-                <div style="flex: 2; padding: 16px;">
-                    <div class="subtitle">Shift Overview</div>
-                    <hr/>
-
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">My Today's Cash Sales</div>
-                        </div>
-                        <div class="card-content">
-                            RM <?= number_format((float)$todaySales, 2) ?>
-                        </div>
-                    </div>
-
-                    <div class="card mt-16">
-                        <div class="card-header">
-                            <div class="card-title">Selected Period</div>
-                        </div>
-                        <div class="card-content">
-                            RM <?= number_format((float)$periodSales, 2) ?>
-                        </div>
-                        <div class="card-content">
-                            <?= htmlspecialchars($filter['label']) ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shift Report Table -->
-                <div style="flex: 5; padding: 16px;">
-                    <div class="subtitle">My Transactions</div>
-                    <hr/>
-
-                    <table id="cashierSalesTable">
-                        <thead>
-                            <tr>
-                                <th>Order #</th>
-                                <th>Total Amount</th>
-                                <th>Date &amp; Time</th>
-                                <th>Receipt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($shiftTransactions as $order) : ?>
-                                <tr>
-                                    <td>#<?= $order->id ?></td>
-                                    <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
-                                    <td><?= date('d M Y h:i A', strtotime($order->created_at)) ?></td>
-                                    <td>
-                                        <a href="#" onclick="viewReceipt(<?= $order->id ?>); return false;" class="text-primary">View</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach ?>
-                        </tbody>
-                    </table>
-
+            <div class="stat-row">
+                <div class="stat-card stat-money">
+                    <div class="stat-label">Filtered Cash Sales</div>
+                    <div class="stat-value">RM <?= number_format((float)$periodSales, 2) ?></div>
+                    <div class="stat-note"><?= htmlspecialchars($filter['label']) ?></div>
                 </div>
             </div>
+
+            <div class="table-panel">
+                <table id="cashierSalesTable">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date &amp; Time</th>
+                            <th>Total Amount</th>
+                            <th>Paid</th>
+                            <th>Change</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($shiftTransactions as $order) : ?>
+                            <tr>
+                                <td>#<?= $order->id ?></td>
+                                <td><?= date('d M Y h:i A', strtotime($order->created_at)) ?></td>
+                                <td>RM <?= number_format((float)$order->total_amount, 2) ?></td>
+                                <td><?= $order->payment === null ? '&mdash;' : 'RM '.number_format($order->payment, 2) ?></td>
+                                <td><?= $order->getChange() === null ? '&mdash;' : 'RM '.number_format($order->getChange(), 2) ?></td>
+                                <td>
+                                    <button type="button" class="btn-receipt" onclick="viewReceipt(<?= $order->id ?>)">View Receipt</button>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
+            </div>
+
         </main>
     </div>
 
