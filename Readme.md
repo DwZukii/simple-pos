@@ -126,7 +126,11 @@ mysql -u root simple-pos < demo_data.sql
 
 That seeds 19 products across 5 categories, about four weeks of orders from both
 cashier accounts, and a history of shift handovers. Dates are relative to today,
-so it always looks current. It leaves the `users` table alone and can be re-run.
+so it always looks current, and the file can be re-run to refresh them.
+
+It also creates the second cashier account and the `Food` category, because a
+clean `simple-pos.sql` import has no categories and only two users. Running it
+on a database that already has them changes nothing.
 
 ### 6. Start it
 Open Laragon and click **Start All**, then visit:
@@ -143,10 +147,15 @@ or `http://localhost/simple-pos` if you are not using Laragon's virtual hosts.
 |---|---|---|
 | Admin | `admin@gmail.com` | `adminadmin` |
 | Cashier | `cashier@email.com` | `cashiercashier` |
+| Cashier | `cashier2@example.com` | `cashiercashier` |
 
-These come from the seed file and are for local development only. Their
-passwords are stored as plain text because they predate the hashing added in the
-manage users feature; any account created through the app is hashed properly.
+The first two come from `simple-pos.sql`; the second cashier comes from
+`demo_data.sql` and only exists if you loaded it. All three are for local
+development only.
+
+The first two store their passwords as plain text because they predate the
+hashing added in the manage users feature. The second cashier is hashed, as is
+any account created through the app.
 
 ---
 
