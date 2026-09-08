@@ -37,6 +37,8 @@ if (post('action') === 'process_order') {
 
     // Check every line before writing anything, so an order can never be
     // partially recorded and stock can never be driven negative.
+    $expectedTotal = 0;
+
     foreach ($requested as $productId => $quantity) {
         $product = Product::find($productId);
 
@@ -53,12 +55,23 @@ if (post('action') === 'process_order') {
             );
             redirect('../index.php');
         }
+
+        $expectedTotal += $product->price * $quantity;
+    }
+
+    // The browser already blocks this, which is exactly why the server has to
+    // check it too. Half a cent of slack absorbs float rounding.
+    $payment = (float) post('payment');
+
+    if ($payment + 0.005 < $expectedTotal) {
+        flashMessage('transaction', 'The payment is less than the total.', FLASH_ERROR);
+        redirect('../index.php');
     }
 
     try {
         $connection->beginTransaction();
 
-        $order = Order::create($currentUser->id);
+        $order = Order::create($currentUser->id, $payment);
 
         foreach ($cartItems as $item) {
             OrderItem::add($order->id, $item);
@@ -72,6 +85,18 @@ if (post('action') === 'process_order') {
         redirect('../index.php');
     }
 
+    // Read the total back from what was actually written rather than reusing
+    // the figure worked out above, so the receipt can never show a total the
+    // database does not agree with.
+    $recorded = Order::findForReceipt($order->id);
+
+    $_SESSION['receipt'] = [
+        'order_id' => $recorded->id,
+        'total'    => (float) $recorded->total_amount,
+        'payment'  => (float) $recorded->payment,
+        'change'   => (float) $recorded->getChange(),
+    ];
+
     flashMessage('transaction', 'Successfull transaction.', FLASH_SUCCESS);
-    redirect('../index.php');
+    redirect('../index.php?show_receipt=1');
 }
