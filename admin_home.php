@@ -50,7 +50,7 @@ $products = Product::all();
                                 <td><?= $product->name ?></td>
                                 <td><?= $product->category->name ?></td>
                                 <td><?= $product->quantity ?></td>
-                                <td><?= $product->price ?></td>
+                                <td>RM <?= number_format((float)$product->price, 2) ?></td>
                                 <td>
                                     <a href="#" onclick="addStock(<?= $product->id ?>)" class="text-green-300">Add Stock</a>
                                     <a href="admin_update_item.php?id=<?= $product->id ?>" class="text-primary ml-16">Update</a>
