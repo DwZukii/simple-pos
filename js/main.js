@@ -1,7 +1,18 @@
 function deleteProduct(id) {
     if (!confirm('Delete this product? This cannot be undone.')) return;
 
-    window.location.href = `api/product_controller.php?action=delete&id=${id}`;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'api/product_controller.php?action=delete';
+
+    const idField = document.createElement('input');
+    idField.type = 'hidden';
+    idField.name = 'id';
+    idField.value = id;
+
+    form.appendChild(idField);
+    document.body.appendChild(form);
+    form.submit();
 }
 
 
