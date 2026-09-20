@@ -110,7 +110,7 @@ $users = User::all();
                                 <td><?= htmlspecialchars($user->email) ?></td>
                                 <td><?= ucfirst(strtolower(htmlspecialchars($user->role))) ?></td>
                                 <td>
-                                    <a class="text-red-500" href="api/user_controller.php?action=delete&id=<?= $user->id ?>">Delete</a>
+                                    <a class="text-red-500" href="#" onclick="deleteUser(<?= $user->id ?>)">Delete</a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
