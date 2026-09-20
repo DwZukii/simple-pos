@@ -15,3 +15,9 @@ function addStock(id) {
 
     window.location.href = `api/product_controller.php?action=add_stock&id=${id}&quantity=${quantity}`;
 }
+
+function deleteUser(id) {
+    if (!confirm('Delete this user account? This cannot be undone.')) return;
+
+    window.location.href = `api/user_controller.php?action=delete&id=${id}`;
+}
