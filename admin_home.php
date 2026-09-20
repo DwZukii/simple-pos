@@ -54,7 +54,7 @@ $products = Product::all();
                                 <td>
                                     <a href="#" onclick="addStock(<?= $product->id ?>)" class="text-green-300">Add Stock</a>
                                     <a href="admin_update_item.php?id=<?= $product->id ?>" class="text-primary ml-16">Update</a>
-                                    <a href="api/product_controller.php?action=delete&id=<?= $product->id ?>" class="text-red-500 ml-16">Delete</a>
+                                    <a href="#" onclick="deleteProduct(<?= $product->id ?>)" class="text-red-500 ml-16">Delete</a>
                                 </td>
                         <?php endforeach; ?>
                     </tbody>

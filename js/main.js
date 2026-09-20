@@ -1,3 +1,8 @@
+function deleteProduct(id) {
+    if (!confirm('Delete this product? This cannot be undone.')) return;
+
+    window.location.href = `api/product_controller.php?action=delete&id=${id}`;
+}
 
 
 
