@@ -20,7 +20,14 @@ if (get('action') === 'add') {
 }
 
 if (get('action') === 'delete') {
-    $id = get('id');
+    // GET is a safe method, so a stale address-bar suggestion or a bookmark
+    // pointing here would otherwise delete the row on a plain page load.
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        die('Method Not Allowed');
+    }
+
+    $id = post('id');
 
     Product::find($id)?->delete();
 
